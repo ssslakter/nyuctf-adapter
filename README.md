@@ -43,58 +43,39 @@ The agent connects to `localhost:<port>` (port shown in `instruction.md`).
 ## Installation
 
 ```bash
-pip install -e .
-```
-
-Or without cloning Harbor's repo:
-
-```bash
-pip install nyuctf
-# then run the adapter directly:
-python -m nyu_ctf_adapter.main --output-dir ./my-dataset
+uv pip install -e .
 ```
 
 ## Usage
 
 ### Generate the full development split
 ```bash
-python -m nyu_ctf_adapter.main \
-    --output-dir ./dataset \
-    --split development
+nyu-ctf-adapter --output-dir ./dataset --split development
 ```
 
 ### Only crypto + rev challenges
 ```bash
-python -m nyu_ctf_adapter.main \
-    --output-dir ./dataset \
-    --category crypto rev
+nyu-ctf-adapter --output-dir ./dataset --category crypto rev
 ```
 
 ### Skip server challenges (no Docker pull needed)
 ```bash
-python -m nyu_ctf_adapter.main \
-    --output-dir ./dataset \
-    --skip-server
+nyu-ctf-adapter --output-dir ./dataset --skip-server
 ```
 
 ### Full test split, limit to 20
 ```bash
-python -m nyu_ctf_adapter.main \
-    --output-dir ./dataset \
-    --split test \
-    --limit 20
+nyu-ctf-adapter --output-dir ./dataset --split test --limit 20
 ```
 
 ### Specific task IDs
 ```bash
-python -m nyu_ctf_adapter.main \
-    --output-dir ./dataset \
-    --task-ids 2021q-cry-bits,2022q-rev-whatisit
+nyu-ctf-adapter --output-dir ./dataset --task-ids 2021q-cry-bits,2022q-rev-whatisit
 ```
 
 ### Dry run (list tasks without writing)
 ```bash
-python -m nyu_ctf_adapter.main --output-dir ./dataset --dry-run
+nyu-ctf-adapter --output-dir ./dataset --dry-run
 ```
 
 ## Running with Harbor
@@ -108,26 +89,11 @@ harbor run \
     -a claude-code \
     -m your-model
 
-# Run only static crypto challenges  
-python -m nyu_ctf_adapter.main \
-    --output-dir ./crypto-only \
-    --category crypto --skip-server
+# Run only static crypto challenges
+nyu-ctf-adapter --output-dir ./crypto-only --category crypto --skip-server
 
 harbor run -p ./crypto-only -a claude-code -m your-model
 ```
-
-## Pushing to Harbor Hub
-
-After generating and validating the dataset locally:
-
-1. Set `HARBOR_API_KEY` in your environment
-2. Run:
-   ```bash
-   harbor dataset push ./dataset --name nyu-ctf/development
-   ```
-
-Or follow the [Harbor publishing docs](https://harborframework.com/docs/datasets/publishing)
-to open a PR to the `harbor-datasets` repo for official registry inclusion.
 
 ## Oracle solutions
 
