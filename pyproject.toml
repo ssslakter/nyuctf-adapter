@@ -1,0 +1,18 @@
+[project]
+name = "nyu-ctf-harbor-adapter"
+version = "0.1.0"
+description = "Converts NYU CTF Bench challenges into Harbor task format"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["nyuctf>=0.1"]
+
+[project.scripts]
+nyu-ctf-adapter = "nyu_ctf_adapter.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
