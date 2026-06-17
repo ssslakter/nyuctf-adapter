@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Converts NYU CTF Bench challenges into Harbor task format"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["nyuctf>=0.1"]
+dependencies = [
+    "nyuctf>=0.1",
+    "pyyaml>=6.0.3",
+]
 
 [project.scripts]
 nyu-ctf-adapter = "nyu_ctf_adapter.main:main"
