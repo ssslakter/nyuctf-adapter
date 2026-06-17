@@ -1,0 +1,29 @@
+src/nyu_ctf_adapter/adapter.py
+  s_dc1a9f2ad7a294::t_c7563605778d65 339
+  s_dc1a9f2ad7a294::t_4556ee4872ef9c 310,312-338,340-351
+  s_dc1a9f2ad7a294::t_491f57aed17b4e 34-35
+  s_dc1a9f2ad7a294::t_a6226f3914620e 189-197
+pyproject.toml
+  s_dc1a9f2ad7a294::t_572a7d8b3e7a72 7-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "e09638e21a2be57d5ebec54b88d9e70157182bac",
+  "prompts": {},
+  "humans": {
+    "h_cec284cdd16cba": {
+      "author": "Slava Chaunin <67190162+Ssslakter@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_dc1a9f2ad7a294": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e7d4e6b2-19b5-4812-b40f-1fe171ab511e",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Slava Chaunin <67190162+Ssslakter@users.noreply.github.com>"
+    }
+  }
+}
