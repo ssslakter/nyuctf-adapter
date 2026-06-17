@@ -12,7 +12,7 @@ Directory layout produced for each task:
         environment/
             Dockerfile                  # static & non-web server challenges
             entrypoint.sh              # non-web server challenges only
-            docker-compose.yml         # web challenges only
+            docker-compose.yaml         # web challenges only
             files/                     # static challenges only
                 <challenge files>
         solution/
@@ -432,7 +432,7 @@ def generate_task(
     # ── environment/ ──
     if chal.container and chal.server_type == "web":
         # Web challenge: docker-compose with separate server and agent containers
-        (env_dir / "docker-compose.yml").write_text(web_docker_compose(chal_dir))
+        (env_dir / "docker-compose.yaml").write_text(web_docker_compose(chal_dir))
         (env_dir / "Dockerfile").write_text(_agent_dockerfile(chal.category or "web"))
     elif chal.container:
         # Non-web server challenge (pwn/nc): single container from challenge image
