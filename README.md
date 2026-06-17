@@ -43,7 +43,7 @@ The agent connects to `localhost:<port>` (port shown in `instruction.md`).
 ## Installation
 
 ```bash
-uv pip install -e .
+uv sync
 ```
 
 ## Usage
