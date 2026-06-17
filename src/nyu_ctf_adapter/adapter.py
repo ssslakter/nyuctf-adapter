@@ -10,9 +10,10 @@ Directory layout produced for each task:
         task.toml
         instruction.md
         environment/
-            Dockerfile
-            entrypoint.sh          # server challenges only
-            files/                 # static challenges only
+            Dockerfile                  # static & non-web server challenges
+            entrypoint.sh              # non-web server challenges only
+            docker-compose.yml         # web challenges only
+            files/                     # static challenges only
                 <challenge files>
         solution/
             solve.sh
@@ -53,14 +54,23 @@ CATEGORY_TAGS: dict[str, list[str]] = {
     "pwn":       ["binary-exploitation", "ctf"],
 }
 
-# Tools installed in every agent container
-BASE_APT = [
-    "python3", "python3-pip", "python3-dev",
-    "netcat-openbsd", "curl", "wget", "nmap",
-    "binutils", "file", "xxd", "gdb", "ltrace", "strace",
-    "patchelf",
-]
-BASE_PIP = ["pwntools", "requests", "pycryptodome"]
+# Category-appropriate tools for the agent container
+CATEGORY_APT: dict[str, list[str]] = {
+    "crypto":    ["python3", "python3-pip"],
+    "rev":       ["python3", "python3-pip", "binutils", "file", "gdb", "ltrace", "strace"],
+    "forensics": ["python3", "python3-pip", "binutils", "file", "xxd"],
+    "misc":      ["python3", "python3-pip", "curl", "wget"],
+    "web":       ["python3", "python3-pip", "curl", "wget"],
+    "pwn":       ["python3", "python3-pip", "netcat-openbsd", "gdb", "patchelf", "binutils"],
+}
+CATEGORY_PIP: dict[str, list[str]] = {
+    "crypto":    ["pycryptodome"],
+    "rev":       [],
+    "forensics": [],
+    "misc":      ["requests"],
+    "web":       ["requests"],
+    "pwn":       ["pwntools"],
+}
 
 
 def sanitize_id(raw: str) -> str:
@@ -158,17 +168,19 @@ def instruction_md(chal: CTFChallenge) -> str:
 
     if chal.server_type:
         port = chal.port or 80
+        # Web challenges use docker-compose: server is reachable via service name "server"
+        host = "server" if chal.server_type == "web" else "localhost"
         lines.append("## Server\n")
         if chal.server_type == "web":
             lines.append(
-                f"A web server is running locally at: `http://localhost:{port}`\n"
-                "Wait a few seconds after container start for the server to be ready."
+                f"A web server is running at: `http://{host}:{port}`\n"
+                "Wait a few seconds for the server to be ready."
             )
         else:
             lines.append(
                 f"A netcat service is running locally. Connect with:\n"
-                f"```\nnc localhost {port}\n```\n"
-                "Wait a few seconds after container start for the server to be ready."
+                f"```\nnc {host} {port}\n```\n"
+                "Wait a few seconds for the server to be ready."
             )
         lines.append("")
 
@@ -229,46 +241,49 @@ def solve_sh_placeholder(chal: CTFChallenge) -> str:
     return "\n".join(lines)
 
 
-def static_dockerfile(chal: CTFChallenge) -> str:
-    apt_lines = " \\\n    ".join(BASE_APT)
-    pip = " ".join(BASE_PIP)
+def _agent_dockerfile(category: str) -> str:
+    """Ubuntu-based agent image with only the tools the category needs."""
+    apt_pkgs = CATEGORY_APT.get(category, ["python3", "python3-pip"])
+    pip_pkgs = CATEGORY_PIP.get(category, [])
 
-    copy_lines: list[str] = []
-    for f in chal.files:
-        copy_lines.append(f"COPY files/{f} /workspace/{f}")
-    copies = "\n".join(copy_lines) or "# (no challenge files)"
-
+    apt_line = " \\\n    ".join(apt_pkgs)
+    pip_block = (
+        f"RUN pip3 install --no-cache-dir {' '.join(pip_pkgs)}\n\n"
+        if pip_pkgs else ""
+    )
     return (
         "FROM ubuntu:22.04\n\n"
         "ENV DEBIAN_FRONTEND=noninteractive\n"
         f"RUN apt-get update -q && apt-get install -y -q \\\n"
-        f"    {apt_lines} \\\n"
+        f"    {apt_line} \\\n"
         "    && apt-get clean && rm -rf /var/lib/apt/lists/*\n\n"
-        f"RUN pip3 install --no-cache-dir {pip} 2>/dev/null || true\n\n"
+        f"{pip_block}"
+        "RUN mkdir -p /workspace\n"
         "WORKDIR /workspace\n"
-        "RUN mkdir -p /workspace\n\n"
-        f"{copies}\n"
     )
+
+
+def static_dockerfile(chal: CTFChallenge) -> str:
+    category = chal.category or "misc"
+    base = _agent_dockerfile(category)
+
+    copy_lines = [f"COPY files/{f} /workspace/{f}" for f in chal.files]
+    copies = "\n".join(copy_lines) or "# (no challenge files)"
+
+    return base + f"\n{copies}\n"
 
 
 def server_dockerfile(chal: CTFChallenge, chal_dir: Path) -> str:
-    """
-    Use the pre-built llmctf/ image as the base so the challenge server
-    environment is identical to the original.  CTF tools are layered on top.
-    """
+    """Single-container entrypoint for non-web server challenges (e.g. pwn/nc).
+    Uses the pre-built challenge image as-is — no package installs that could
+    fail on non-root images."""
     fallback_image = f"llmctf/{sanitize_id(chal_dir.name)}"
     image = docker_image_for(chal_dir, fallback_image)
-
-    apt = " ".join(
-        ["python3", "python3-pip", "netcat-openbsd", "curl", "wget", "nmap"]
-    )
 
     return textwrap.dedent(f"""\
         FROM {image}
 
-        ENV DEBIAN_FRONTEND=noninteractive
-        RUN (apt-get update -q && apt-get install -y -q {apt} || true) \\
-            && (pip3 install --no-cache-dir pwntools requests 2>/dev/null || true)
+        USER root
 
         RUN mkdir -p /workspace
 
@@ -277,6 +292,32 @@ def server_dockerfile(chal: CTFChallenge, chal_dir: Path) -> str:
 
         WORKDIR /workspace
         CMD ["/harbor_entrypoint.sh"]
+    """)
+
+
+def web_docker_compose(chal_dir: Path) -> str:
+    """docker-compose for web challenges: challenge image as 'server', agent as 'agent'."""
+    fallback_image = f"llmctf/{sanitize_id(chal_dir.name)}"
+    image = docker_image_for(chal_dir, fallback_image)
+
+    return textwrap.dedent(f"""\
+        version: "3.8"
+
+        services:
+          server:
+            image: {image}
+            networks:
+              - ctfnet
+
+          agent:
+            build: .
+            networks:
+              - ctfnet
+            depends_on:
+              - server
+
+        networks:
+          ctfnet:
     """)
 
 
@@ -359,8 +400,12 @@ def generate_task(
     _write_executable(sol_dir / "solve.sh", solve_sh_placeholder(chal))
 
     # ── environment/ ──
-    if chal.container:
-        # Server challenge: base on the pre-built llmctf/ image
+    if chal.container and chal.server_type == "web":
+        # Web challenge: docker-compose with separate server and agent containers
+        (env_dir / "docker-compose.yml").write_text(web_docker_compose(chal_dir))
+        (env_dir / "Dockerfile").write_text(_agent_dockerfile(chal.category or "web"))
+    elif chal.container:
+        # Non-web server challenge (pwn/nc): single container from challenge image
         (env_dir / "Dockerfile").write_text(server_dockerfile(chal, chal_dir))
         _write_executable(
             env_dir / "entrypoint.sh",
