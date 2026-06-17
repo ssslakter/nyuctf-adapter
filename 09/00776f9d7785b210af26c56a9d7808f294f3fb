@@ -1,0 +1,33 @@
+src/nyu_ctf_adapter/adapter.py
+  s_62e56ec3d5d0fd::t_8408d3f41dbb13 13-16
+  s_62e56ec3d5d0fd::t_078a678be7282b 286
+  s_62e56ec3d5d0fd::t_7c5b7516e8ceec 298
+  s_62e56ec3d5d0fd::t_e61f6c2d925e9e 244-247,249-253,258,260-261,266-273
+  s_62e56ec3d5d0fd::t_f9c75c12a2bb61 403-408
+  s_62e56ec3d5d0fd::t_e89c18ac2def16 277-279,299-320
+  s_62e56ec3d5d0fd::t_5b07574add8519 171-172,176-177,182-183
+  s_62e56ec3d5d0fd::t_4655a524c47424 57-73
+run_bench.yaml
+  h_cec284cdd16cba 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "0900776f9d7785b210af26c56a9d7808f294f3fb",
+  "prompts": {},
+  "humans": {
+    "h_cec284cdd16cba": {
+      "author": "Slava Chaunin <67190162+Ssslakter@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_62e56ec3d5d0fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7839df76-8504-4c77-9b4d-61c7ce950643",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Slava Chaunin <67190162+Ssslakter@users.noreply.github.com>"
+    }
+  }
+}
