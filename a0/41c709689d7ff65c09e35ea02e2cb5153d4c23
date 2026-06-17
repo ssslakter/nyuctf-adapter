@@ -1,0 +1,16 @@
+README.md
+  h_cec284cdd16cba 46
+.gitignore
+  h_cec284cdd16cba 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "a041c709689d7ff65c09e35ea02e2cb5153d4c23",
+  "prompts": {},
+  "humans": {
+    "h_cec284cdd16cba": {
+      "author": "Slava Chaunin <67190162+Ssslakter@users.noreply.github.com>"
+    }
+  }
+}
