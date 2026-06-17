@@ -1,0 +1,14 @@
+src/nyu_ctf_adapter/adapter.py
+  h_cec284cdd16cba 15,435
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "43a647fd5e659ab2e0cbbfba7136c6f21e494cb9",
+  "prompts": {},
+  "humans": {
+    "h_cec284cdd16cba": {
+      "author": "Slava Chaunin <67190162+Ssslakter@users.noreply.github.com>"
+    }
+  }
+}
