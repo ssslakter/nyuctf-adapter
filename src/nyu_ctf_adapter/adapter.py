@@ -339,7 +339,7 @@ def web_docker_compose(chal_dir: Path) -> str:
             svc["networks"] = {"ctfnet": ctfnet_entry}  # type: ignore[assignment]
 
     server_names = list(services.keys())
-    services["agent"] = {
+    services["main"] = {
         "build": ".",
         "networks": ["ctfnet"],
         "depends_on": server_names,
